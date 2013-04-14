@@ -37,7 +37,6 @@ class JBot_Aitor extends JBot {
 			collisionAngle, time, speed, energyLevel, cannonAngle,
 			otherRobotEnergy;
 
-
 	int radarObjectType, collisionObjectType, optionType, warningType,
 			robotsLeft;
 
@@ -50,10 +49,10 @@ class JBot_Aitor extends JBot {
 	BotThread auxiliar;
 	// Constructor:
 	int multiplicador = 1;
-	
+
 	boolean waitingCookie = false;
 	long waitingCookieTime = 0;
-	
+
 	JBot_Aitor(String name, int SLEEP) {
 		super(name);
 		this.SLEEP = SLEEP;
@@ -62,7 +61,7 @@ class JBot_Aitor extends JBot {
 		parString = new String[MAX_PARAMETER_COUNT];
 
 		bf = new BufferedReader(new InputStreamReader(System.in));
-		auxiliar = new BotThread(this,SLEEP);
+		auxiliar = new BotThread(this, SLEEP);
 		// some Initialization:
 		lastAction = UNKNOWN_MESSAGE_TO_ROBOT;
 		lastObject = NOOBJECT;
@@ -82,12 +81,12 @@ class JBot_Aitor extends JBot {
 	@Override
 	public void darVueltas() {
 		frenar(0);
-		girar(300,0,90,true);
+		girar(300, 0, 90, true);
 		acelerar(50);
-		echoDebug("dando vueltas sin paraaaar" , 4);
-		
+		echoDebug("dando vueltas sin paraaaar", 4);
+
 	}
-	
+
 	@Override
 	public void acelerar(int porcentaje) {
 		if (porcentaje < 0) {
@@ -100,12 +99,11 @@ class JBot_Aitor extends JBot {
 				porcentaje = 20;
 			}
 		}
-		double acel = (gameOption[ROBOT_MAX_ACCELERATION]*porcentaje/100);
+		double acel = (gameOption[ROBOT_MAX_ACCELERATION] * porcentaje / 100);
 		this.velocidad = porcentaje;
-		sendCommand("Accelerate "+acel);
+		sendCommand("Accelerate " + acel);
 	}
-	
-	
+
 	@Override
 	public void frenar(int porcentaje) {
 		if (porcentaje < 0) {
@@ -118,38 +116,41 @@ class JBot_Aitor extends JBot {
 				porcentaje = 30;
 			}
 		}
-		sendCommand("Brake "+porcentaje/100);
+		sendCommand("Brake " + porcentaje / 100);
 	}
-	
-	private void girarCookie(int grados, double anguloRelativo,int porcentajeVelocidad, boolean random, boolean fromCookie) {
+
+	private void girarCookie(int grados, double anguloRelativo,
+			int porcentajeVelocidad, boolean random, boolean fromCookie) {
 		if ((this.waitingCookieTime + 2000) < System.currentTimeMillis()) {
 			this.waitingCookie = false;
 		}
-		if(!fromCookie && this.waitingCookie) 
+		if (!fromCookie && this.waitingCookie)
 			return;
 		double g = 0.0;
-		if (grados !=0 ){
-		 g = ((TWO_PI*grados/360 ) + anguloRelativo) % TWO_PI;
-		}
-		else {
-		 g = anguloRelativo;
+		if (grados != 0) {
+			g = ((TWO_PI * grados / 360) + anguloRelativo) % TWO_PI;
+		} else {
+			g = anguloRelativo;
 		}
 		if (random) {
-			g *= (Math.random()*2-1 > 0)?1:-1;
+			g *= (Math.random() * 2 - 1 > 0) ? 1 : -1;
 
 		}
 		rotationReached = false;
-		double velocidad = (gameOption[ROBOT_MAX_ROTATE] * porcentajeVelocidad )/100;
-		echoDebug("grados "+grados+" rel: "+anguloRelativo +" -> "+g , 4);
-		sendCommand("RotateAmount " + ROT_ROBOT
-				+ " "+ velocidad+" " + g*multiplicador);
+		double velocidad = (gameOption[ROBOT_MAX_ROTATE] * porcentajeVelocidad) / 100;
+		echoDebug("grados " + grados + " rel: " + anguloRelativo + " -> " + g,
+				4);
+		sendCommand("RotateAmount " + ROT_ROBOT + " " + velocidad + " " + g
+				* multiplicador);
 	}
-	
-	private void girar(int grados, double anguloRelativo,int porcentajeVelocidad, boolean random) {
-		this.girarCookie(grados, anguloRelativo, porcentajeVelocidad, random, false);
+
+	private void girar(int grados, double anguloRelativo,
+			int porcentajeVelocidad, boolean random) {
+		this.girarCookie(grados, anguloRelativo, porcentajeVelocidad, random,
+				false);
 	}
-	
-	private void disparar (int porcentaje) {
+
+	private void disparar(int porcentaje) {
 		if (this.energyLevel < 5.0)
 			return;
 		if (porcentaje < 0) {
@@ -157,23 +158,28 @@ class JBot_Aitor extends JBot {
 		} else if (porcentaje > 100) {
 			porcentaje = 100;
 		}
-		//en funcion da nosa enerxia imolo modificar un pouco. ata un 50%.
-		double p = (porcentaje *(1-(1-this.energyLevel/gameOption[ROBOT_MAX_ENERGY])*0.5))/100;
-		double shoot = (gameOption[SHOT_MAX_ENERGY] - gameOption[SHOT_MIN_ENERGY])*(p)+gameOption[SHOT_MIN_ENERGY];
-		sendCommand("Shoot "+shoot);
+		// en funcion da nosa enerxia imolo modificar un pouco. ata un 50%.
+		double p = (porcentaje * (1 - (1 - this.energyLevel
+				/ gameOption[ROBOT_MAX_ENERGY]) * 0.5)) / 100;
+		double shoot = (gameOption[SHOT_MAX_ENERGY] - gameOption[SHOT_MIN_ENERGY])
+				* (p) + gameOption[SHOT_MIN_ENERGY];
+		sendCommand("Shoot " + shoot);
 	}
-	
+
 	private void barrerRadar(int grados, int velocidad) {
-		double g = (TWO_PI*grados/360) % TWO_PI;
-		double v = (gameOption[ROBOT_MAX_ROTATE] * velocidad )/100;
-		sendCommand("Sweep " + (ROT_CANNON + ROT_RADAR)
-				+ " "+v+" -"+g+" "+g);
+		double g = (TWO_PI * grados / 360) % TWO_PI;
+		double v = (gameOption[ROBOT_MAX_ROTATE] * velocidad) / 100;
+		sendCommand("Sweep " + (ROT_CANNON + ROT_RADAR) + " " + v + " -" + g
+				+ " " + g);
 	}
+
 	@Override
-	public void cambio(){
+	public void cambio() {
+		echoDebug("cambiando angulos", 4);
 		this.girar(180, 0, 100, false);
-		this.multiplicador*=-1;
+		this.multiplicador *= -1;
 	}
+
 	// JBot running as a thread:
 	public void run() {
 
@@ -206,39 +212,51 @@ class JBot_Aitor extends JBot {
 						radarDistance = parseDouble(parString[0]);
 						radarObjectType = Integer.parseInt(parString[1]);
 						radarAngle = parseDouble(parString[2]);
-						
+
 						switch (radarObjectType) {
 						case ROBOT:
 							robotDistance = radarDistance;
-							echoDebug("distance to robot: " + robotDistance + ",angle: "+radarAngle+ " "+parString[2], 4);
+							echoDebug("distance to robot: " + robotDistance
+									+ ",angle: " + radarAngle + " "
+									+ parString[2], 4);
 							disparar(10);
-//							barrerRadar(20,30);
-							
+							// barrerRadar(20,30);
+
 							frenar(10);
-							
-								// echoDebug("saw a robot, now fleeing for "
-								// +(int)((flee-time)*1000)+ "ms", 4);
-							if (robotDistance < 3.0 ) {
+
+							// echoDebug("saw a robot, now fleeing for "
+							// +(int)((flee-time)*1000)+ "ms", 4);
+							if (robotDistance < 3.0) {
 								frenar(40);
 								disparar(100);
 								disparar(80);
 								acelerar(20);
-								girar((int) (40*Math.random())+10,0,50,true);
+								girar((int) (40 * Math.random()) + 10, 0, 80,
+										true);
+							} else if (robotDistance < 7.0){
+								frenar(20);
+								disparar(40);
+								disparar(30);
+								acelerar(20);
+								girar((int) (Math.random() * 2), radarAngle,
+										50, true);
 							} else {
-								girar((int) (Math.random()*10),radarAngle,50,true);
+								girar(0, radarAngle,
+										50, false);
 								acelerar(30);
 
 							}
 							break;
 						case SHOT:
-							//hacemos maniobra de esquivar, giro de 180º
-							girar((int) (90+Math.random()*100),0,(int) (50+Math.random()*50),true);
+							// hacemos maniobra de esquivar, giro de 180º
+							girar((int) (90 + Math.random() * 100), 0,
+									(int) (50 + Math.random() * 50), true);
 							frenar(0);
 							acelerar(40);
-//							if (rotationReached){
-//								girar(90,0,100,true);
-//							}
-							
+							// if (rotationReached){
+							// girar(90,0,100,true);
+							// }
+
 							break;
 						case WALL:
 							wallDistance = radarDistance;
@@ -247,42 +265,44 @@ class JBot_Aitor extends JBot {
 							if (wallDistance < 4.0) {
 								acelerar(4);
 								frenar(100);
-								girar((int) (90+Math.random()*30),0,100,false);
+								girar((int) (90 + Math.random() * 30), 0, 100,
+										false);
 							}
 							if (wallDistance < 9.0) {
 								frenar(70);
-								girar((int) (75+40*Math.random()),0,100,false);
+								girar((int) (75 + 40 * Math.random()), 0, 100,
+										false);
 								acelerar(30);
-								
-							} 
-//							else {
-//								frenar(10);
-//								acelerar(30);
-//
-//								if (rotationReached){
-//									girar(90,Math.abs(wallAngle),80,true);
-//								}
-//	
-////								barrerRadar(30,30);
-//							}
+
+							}
+							// else {
+							// frenar(10);
+							// acelerar(30);
+							//
+							// if (rotationReached){
+							// girar(90,Math.abs(wallAngle),80,true);
+							// }
+							//
+							// // barrerRadar(30,30);
+							// }
 							break;
 						case COOKIE:
 							this.waitingCookieTime = System.currentTimeMillis();
 							this.waitingCookie = true;
-							if (radarDistance > 8.0){
-								girar(0,radarAngle,100,false);
+							if (radarDistance > 8.0) {
+								girarCookie(0, radarAngle, 50, false,true);
 								frenar(20);
 								acelerar(60);
 							} else {
 								frenar(80);
 								acelerar(5);
 							}
-										
+
 							break;
 						case MINE:
 							if (radarDistance < 8.0)
 								disparar(3);
-							
+
 							disparar(1);
 							break;
 						default:
@@ -312,23 +332,23 @@ class JBot_Aitor extends JBot {
 					case COLLISION:
 						collisionObjectType = Integer.parseInt(parString[0]);
 						collisionAngle = parseDouble(parString[1]);
-						echoDebug("hit something at angle=" +collisionAngle, 4);
+						echoDebug("hit something at angle=" + collisionAngle, 4);
 						switch (collisionObjectType) {
 						case ROBOT:
 							if (Math.abs(collisionAngle) < 0.5) {
 								disparar(20);
 							}
-								
-								frenar(0);
-								girar(90, 0, 100,false);
-								
-								acelerar(10);
-								// echoDebug("A robot! Panicing for "
-								// +(int)((flee-time)*1000)+ "ms", 4);
-								
+
+							frenar(0);
+							girar(90, 0, 100, false);
+
+							acelerar(10);
+							// echoDebug("A robot! Panicing for "
+							// +(int)((flee-time)*1000)+ "ms", 4);
+
 							break;
 						case SHOT:
-							girar(90, 0, 80,true);
+							girar(90, 0, 80, true);
 							frenar(0);
 							acelerar(60);
 							// echoDebug("A shot! Panicing for "
@@ -336,10 +356,10 @@ class JBot_Aitor extends JBot {
 							echoDebug("Ouch!", 4);
 							break;
 						case WALL:
-								frenar(90);
+							frenar(90);
 
-									girar(140,0,100,false);
-								acelerar(10);
+							girar(140, 0, 100, false);
+							acelerar(10);
 							break;
 						case COOKIE:
 							echoDebug("Yumm Yumm", 3);
@@ -358,17 +378,18 @@ class JBot_Aitor extends JBot {
 					case ENERGY:
 						energyLevel = parseDouble(parString[0]);
 						// Energy lower than 70% ?
-//						if (energyLevel * 10 < gameOption[ROBOT_START_ENERGY] * 7) {
-//							sendCommand("Sweep " + (ROT_CANNON + ROT_RADAR)
-//									+ " 1 0 0");
-//						}
+						// if (energyLevel * 10 < gameOption[ROBOT_START_ENERGY]
+						// * 7) {
+						// sendCommand("Sweep " + (ROT_CANNON + ROT_RADAR)
+						// + " 1 0 0");
+						// }
 						echoDebug(s, 5);
 						break;
 
 					case ROBOTS_LEFT:
 						robotsLeft = Integer.parseInt(parString[0]);
 						if (robotsLeft < 4) {
-							barrerRadar(70, 100);
+							barrerRadar(50, 100);
 						}
 						s = "RobotsLeft Message: " + robotsLeft;
 						echoDebug(s, 5);
@@ -397,7 +418,7 @@ class JBot_Aitor extends JBot {
 
 					case GAME_STARTS:
 						this.darVueltas();
-						this.barrerRadar(25, 40);
+						this.barrerRadar(25, 60);
 						echo("Let's go !");
 						break;
 
